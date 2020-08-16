@@ -66,3 +66,16 @@ This section has moved here: https://facebook.github.io/create-react-app/docs/de
 ### `yarn build` fails to minify
 
 This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+
+
+# TILED Map
+
+## Tiled Assets
+
+**Important:**  Tiled may not work on your device, need to add assets on right path.
+
+Tiled assets are present in `store-map` directory. Please use [Tiled](https://www.mapeditor.org/) to update store map or assets.
+
+`./server/resizeImages.ts` - Use this file to update tiled assets to appropriate dimensions.
+
+**TODO:** Pass values from command line arguments, instead of hardcoding for `resizeImage`.
