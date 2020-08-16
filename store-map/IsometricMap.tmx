@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.4" tiledversion="1.4.2" orientation="isometric" renderorder="right-down" width="16" height="16" tilewidth="256" tileheight="128" infinite="0" nextlayerid="13" nextobjectid="1">
+ <editorsettings>
+  <export target="IsometricMap.json" format="json"/>
+ </editorsettings>
  <tileset firstgid="1" source="assets/prototype-kit.tsx"/>
  <tileset firstgid="241" source="assets/foodkit-new.tsx"/>
  <tileset firstgid="1041" source="assets/character.tsx"/>
