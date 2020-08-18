@@ -8,7 +8,8 @@
     "dev": "ts-node djikstrasStatechart.ts",
     "debug": "ndb djikstrasStatechart.ts",
     "run-normal": "node dijkstras",
-    "resize-image": "ts-node resizeImages.ts"
+    "resize-image": "ts-node resizeImages.ts",
+    "serve-game": "http-server"
   },
   "author": "",
   "license": "ISC",
@@ -22,6 +23,7 @@
     "typescript": "^3.9.7"
   },
   "dependencies": {
+    "http-server": "^0.12.3",
     "sharp": "^0.25.4"
   }
 }
