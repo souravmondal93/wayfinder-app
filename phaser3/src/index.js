@@ -4,6 +4,8 @@ import IsoPlugin from 'phaser3-plugin-isometric';
 
 // import logoImg from "./assets/logo.png";
 
+import { characterPickObject } from './util/characterPickUp';
+
 import floorE from "./assets/tileset/tileset-images/prototype/Isometric/floor_E.png";
 import wallCurveS from "./assets/tileset/tileset-images/prototype/Isometric/wallCurve_S.png";
 import wallE from "./assets/tileset/tileset-images/prototype/Isometric/wall_E.png";
@@ -102,8 +104,27 @@ import sundaeSE from "./assets/tileset/tileset-images/foodkit/output/sundae_SE.p
 import popsicleChocolateNW from "./assets/tileset/tileset-images/foodkit/output/popsicleChocolate_NW.png-512x256.png";
 
 import Human0Idle0 from "./assets/tileset/tileset-images/character/Human/Human_0_Idle0.png";
+import Human6Idle0 from "./assets/tileset/tileset-images/character/Human/Human_6_Idle0.png";
+
+// import Human_0_Pickup0 from "./assets/tileset/tileset-images/character/Human/Human_0_Pickup0.png";
+// import Human_0_Pickup1 from "./assets/tileset/tileset-images/character/Human/Human_0_Pickup1.png";
+// import Human_0_Pickup2 from "./assets/tileset/tileset-images/character/Human/Human_0_Pickup2.png";
+// import Human_0_Pickup3 from "./assets/tileset/tileset-images/character/Human/Human_0_Pickup3.png";
+// import Human_0_Pickup4 from "./assets/tileset/tileset-images/character/Human/Human_0_Pickup4.png";
+// import Human_0_Pickup5 from "./assets/tileset/tileset-images/character/Human/Human_0_Pickup5.png";
+// import Human_0_Pickup6 from "./assets/tileset/tileset-images/character/Human/Human_0_Pickup6.png";
+// import Human_0_Pickup7 from "./assets/tileset/tileset-images/character/Human/Human_0_Pickup7.png";
+// import Human_0_Pickup8 from "./assets/tileset/tileset-images/character/Human/Human_0_Pickup9.png";
+// import Human_0_Pickup9 from "./assets/tileset/tileset-images/character/Human/Human_0_Pickup8.png";
+
+/**
+ * Character Asset
+ */
+import characterSpriteImage from './assets/spritesheet/characterSpriteImage.png';
+import characterSpriteJson from './assets/spritesheet/characterSpriteImage.json';
 
 import map from './assets/IsometricMap.json';
+import { update } from 'xstate/lib/actionTypes';
 
 
 class IsoInteractionExample extends Scene {
@@ -112,6 +133,8 @@ class IsoInteractionExample extends Scene {
       key: 'IsoInteractionExample',
       mapAdd: { isoPlugin: 'iso' }
     };
+
+    let characterIsoSprite;
 
     super(sceneConfig);
 
@@ -1362,7 +1385,7 @@ class IsoInteractionExample extends Scene {
         }
       }
     };
-  
+
     return jsonFilePath;
   }
 
@@ -1372,6 +1395,8 @@ class IsoInteractionExample extends Scene {
 
   preload() {
     this.load.image('Human0Idle0', Human0Idle0);
+    this.load.image('Human6Idle0', Human6Idle0);
+
     this.load.image('floorE', floorE);
     this.load.image('wallCurveS', wallCurveS);
     this.load.image('wallE', wallE);
@@ -1468,7 +1493,7 @@ class IsoInteractionExample extends Scene {
     this.load.image('iceCreamSE', iceCreamSE);
     this.load.image('sundaeSE', sundaeSE);
     this.load.image('popsicleChocolateNW', popsicleChocolateNW);
-    
+
     // console.log('THIS: ', this);
     // this.world.setBounds(0, 0, 2048, 1024);
 
@@ -1490,8 +1515,17 @@ class IsoInteractionExample extends Scene {
     //   console.log(image);
     //   this.load.image(image.toString(), image);
     // }
-  
+
     // this.load.tilemapTiledJSON('map', 'src/assets/IsometricMap.json');
+
+    /**
+     * Load Assets for Character Object pick up animation
+     */
+
+    // const frames = { ...characterSpriteJson.textures[0].frames };
+    // const atlas = this.load.multiatlas('character12345', characterSpriteJson, characterSpriteImage);
+
+    // console.log('Atlas: ', atlas);
 
     this.load.scenePlugin({
       key: 'IsoPlugin',
@@ -1507,6 +1541,9 @@ class IsoInteractionExample extends Scene {
     console.log('THIS: ', this);
     console.log('MAP: ', map);
 
+    // const frames = { ...characterSpriteJson.textures[0].frames };
+    // console.log('Sprite JSON: ', { frames });
+
 
     this.cameras.main.setZoom(0.20);
 
@@ -1518,6 +1555,7 @@ class IsoInteractionExample extends Scene {
     this.carpets = this.add.group();
     this.furnitureRack = this.add.group();
     this.food = this.add.group();
+    this.characterLvl = this.add.group();
 
     // this.add.isoSprite(0, 15 * 128, 0, 'Human0Idle0', this.floorGroup);
     this.createLayer(this);
@@ -1525,6 +1563,90 @@ class IsoInteractionExample extends Scene {
 
     // Add some tiles to our scene
     // this.spawnTiles();
+
+    // this.addCharacter(this);
+
+    const upKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
+    const downKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
+    const leftKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
+    const rightKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
+
+    upKey.on('down', (key, event) => {
+      event.stopPropagation();
+      // console.log('UP: ', this.characterIsoSprite);
+      if (this.isWalkableArea({x: this.characterIsoSprite.isoX, y: this.characterIsoSprite.isoY - 128}, 'x')) {
+        this.characterIsoSprite.isoY -= 128;
+      }
+    });
+
+    downKey.on('down', (key, event) => {
+      event.stopPropagation();
+      // console.log('DOWN: ', this.characterIsoSprite, event, key);
+      if (this.isWalkableArea({x: this.characterIsoSprite.isoX, y: this.characterIsoSprite.isoY + 128}, 'x')) {
+        this.characterIsoSprite.isoY += 128;
+      }
+    });
+
+    leftKey.on('down', (key, event) => {
+      event.stopPropagation();
+      // console.log('LEFT: ', this.characterIsoSprite);
+      if (this.isWalkableArea({x: this.characterIsoSprite.isoX - 128, y: this.characterIsoSprite.isoY}, 'y')) {
+        this.characterIsoSprite.isoX -= 128;
+      }
+    });
+
+    rightKey.on('down', (key, event) => {
+      event.stopPropagation();
+      // console.log('RIGHT: ', this.characterIsoSprite);
+      if (this.isWalkableArea({x: this.characterIsoSprite.isoX + 128, y: this.characterIsoSprite.isoY}, 'y')) {
+        this.characterIsoSprite.isoX += 128;
+      }
+    });
+  }
+
+  isWalkableArea(coordinates, axis) {
+    console.log(coordinates, axis);
+    const walkableCoordinates = this.generateWalkableCoordinatesArray();
+    const MAP_SIZE = 128;
+
+    // console.log(walkableCoordinates);
+
+    // console.log(`X: ${coordinates.x / MAP_SIZE}, Y: ${coordinates.y / MAP_SIZE}, ${walkableCoordinates[axis].includes(coordinates[axis] / MAP_SIZE)}`);
+    console.log(`X: ${coordinates.x / MAP_SIZE}, Y: ${coordinates.y / MAP_SIZE}`);
+
+    // return (walkableCoordinates[axis].includes(coordinates[axis] / MAP_SIZE));
+
+    return walkableCoordinates.some((coord) => {
+      return ((coordinates.x / MAP_SIZE === coord[0]) && (coordinates.y / MAP_SIZE === coord[1]))
+    });
+  }
+
+  generateWalkableCoordinatesArray() {
+    const WALKABLE_MAP_SIZE = 14;
+    const pathableX = [1, 14];
+    const pathableY = [1, 4, 7, 8, 11, 14];
+    const additionalXY = [[1, 13], [1, 12], [14, 13], [14, 12], 
+                          [1, 9], [1, 10], [14, 9], [14, 10], 
+                          [1, 6], [1, 5], [14, 6], [14, 5],
+                          [1, 3], [1, 2], [14, 3], [14, 2]];
+    const walkableCoordinates = [];
+
+    for(let i = 1; i <= WALKABLE_MAP_SIZE; i++) {
+      for(let j of pathableY) {
+        walkableCoordinates.push([i, j]);
+      }
+    }
+
+    return [ ...walkableCoordinates, ...additionalXY ];
+  }
+
+  getWalkableCoordinates() {
+    const WALKABLE_MAP_SIZE = 14;
+    const pathableX = [1, 14];
+    const pathableY = [1, 4, 7, 8, 11, 14];
+    const additionalXY = [];
+
+    return ({x: pathableX, y: pathableY});
   }
 
   getMappedTile(tile) {
@@ -1624,7 +1746,8 @@ class IsoInteractionExample extends Scene {
       '682': 'iceCreamSE',
       '656': 'sundaeSE',
       '461': 'popsicleChocolateNW',
-    }
+      '1129': 'Human6Idle0',
+    };
 
     return mappedTiled[tile];
   }
@@ -1649,13 +1772,13 @@ class IsoInteractionExample extends Scene {
 
         const layer3Tile = map.layers[3].data[dataCounter];
         layer3Tile && game.add.isoSprite(xx, yy, 3, this.getMappedTile(layer3Tile), game.carpets);
-        
+
         const layer4Tile = map.layers[4].data[dataCounter];
         if (layer4Tile) {
           const tile = game.add.isoSprite(xx, yy, 4, this.getMappedTile(layer4Tile), game.furnitureRack);
           tile.setTint(0x86bfda);
         }
-        
+
         const layer5Tile = map.layers[5].data[dataCounter];
         if (layer5Tile) {
           // (layer5Tile == 1026) && console.log('1026: ', xx, yy)
@@ -1663,9 +1786,35 @@ class IsoInteractionExample extends Scene {
           // tile.setTint(0x86bfda);
         }
 
+        const layer10Tile = map.layers[10].data[dataCounter];
+        if (layer10Tile) {
+          this.characterIsoSprite = game.add.isoSprite(xx, yy, 200, this.getMappedTile(layer10Tile), game.characterLvl);
+          this.characterIsoSprite.setScale(2);
+          console.log('characterIsoSprite: ', this.characterIsoSprite);
+        }
+
         dataCounter++;
       }
     }
+  }
+
+  addCharacter(game) {
+    // const character = game.add.sprite(1, 1, 'character', 'Human_0_Idle0.png');// keep him out side screen area
+
+    const generatedFrames = game.anims.generateFrameNames('character12345', {
+      start: 0, end: 9, zeroPad: 1,
+      prefix: 'Human_0_Pickup', suffix: '.png'
+    });
+
+    console.log('Generated Frames: ', generatedFrames);
+
+    const anim = game.anims.create({
+      key: 'characterPickUp',
+      frames: generatedFrames,
+      repeat: -1
+    });
+
+    game.add.sprite(400, 300, 'character12345').setScale(4).play('characterPickUp');
   }
 
   spawnTiles() {
@@ -1676,17 +1825,29 @@ class IsoInteractionExample extends Scene {
         tile = this.add.isoSprite(xx, yy, 0, 'tile', this.isoGroup);
         tile.setInteractive();
 
-        tile.on('pointerover', function() {
+        tile.on('pointerover', function () {
           this.setTint(0x86bfda);
           this.isoZ += 5;
         });
 
-        tile.on('pointerout', function() {
+        tile.on('pointerout', function () {
           this.clearTint();
           this.isoZ -= 5;
         });
       }
     }
+  }
+
+  update() {
+    // this.updateCharacterPosition(this);
+  }
+  
+  updateCharacterPosition(game) {
+    // console.log('ABC');
+    game.characterLvl.clear();
+    setTimeout(() => {
+      this.add.isoSprite(0, 15 * 128, 0, 'Human0Idle0', this.floorGroup);
+    }, 1000)
   }
 }
 
